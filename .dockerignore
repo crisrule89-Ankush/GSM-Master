@@ -1,0 +1,13 @@
+.git/
+.venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
+uploads/
+appearance.json
+.pytest_cache/
+.coverage
+.vscode/
+.idea/

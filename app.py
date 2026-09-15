@@ -533,6 +533,11 @@ def process_gsm_upload(file_storage):
 def index():
     return redirect("/dashboard" if "username" in session else "/login")
 
+@app.route("/healthz")
+def health_check():
+    """Lightweight health endpoint for the hosting platform."""
+    return jsonify({"status": "ok"}), 200
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

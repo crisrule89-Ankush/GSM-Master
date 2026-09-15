@@ -47,3 +47,14 @@ Templates/          Application pages (login, dashboard, GSM master, upload)
 .env.example        Safe configuration template
 requirements.txt    Python dependencies
 ```
+
+## Deploy on Render
+
+This repository includes a Docker configuration because the application needs Microsoft ODBC Driver 18 to connect to SQL Server. Render builds the Docker image and starts Gunicorn automatically.
+
+1. In Render, select **New +** ? **Web Service**, then connect this GitHub repository.
+2. Render detects `render.yaml` and `Dockerfile`. Keep the service runtime as **Docker**.
+3. In the service **Environment** settings, add these secret environment variables: `SECRET_KEY`, `DB_SERVER`, `DB_NAME`, `DB_USER`, and `DB_PASSWORD`.
+4. Deploy the service. Render checks `/healthz` to confirm the web process is running.
+
+The SQL Server must accept remote traffic from Render. Configure its firewall/network rules for the Render service and set production credentials only in Render's secret environment variables.

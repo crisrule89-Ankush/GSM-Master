@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: gsm-master
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    autoDeploy: true
