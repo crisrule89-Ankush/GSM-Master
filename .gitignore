@@ -1,0 +1,22 @@
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python artifacts and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Runtime-generated application data
+uploads/
+appearance.json
+
+# Test, IDE, and OS files
+.pytest_cache/
+.coverage
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

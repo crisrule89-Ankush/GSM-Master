@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
+
+    <title>GSM - ESCON</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- Google Font -->
+    <link
+        rel="preconnect"
+        href="https://fonts.googleapis.com">
+
+    <link
+        rel="preconnect"
+        href="https://fonts.gstatic.com"
+        crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+
+        :root {
+            --primary: #0756C9;
+            --primary-light: #0875ED;
+            --accent: #FF9D00;
+            --teal: #11A6A0;
+            --purple: #805AD5;
+            --secondary: #061A4C;
+            --sidebar: #041638;
+            --light-bg: #F4F7FC;
+            --text: #253858;
+            --muted: #718096;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Poppins", sans-serif;
+            background:
+                radial-gradient(circle at 92% 0, rgba(8, 117, 237, .10), transparent 25%),
+                linear-gradient(135deg, #F8FBFF 0%, var(--light-bg) 62%, #EDF5FF 100%);
+            color: var(--text);
+            font-family: "{{ appearance.font_family }}", sans-serif;
+            font-size: {{ appearance.font_size }};
+        }
+
+        /* ==========================================
+           TOP NAVBAR
+        ========================================== */
+
+        .topbar {
+            height: 75px;
+            background:
+                linear-gradient(110deg, #ffffff 0%, #f7faff 72%, #edf5ff 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            border-bottom: 1px solid #E7EDF5;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title h4 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .back-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 10px;
+            background: #EEF4FC;
+            color: var(--primary);
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .topbar > div:last-child {
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #DCEAFF;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #EAF3FF, #FFF4DD);
+        }
+
+        .company-image {
+            max-width: 150px;
+            max-height: 42px;
+            object-fit: contain;
+        }
+
+        /* ==========================================
+           MAIN CONTENT
+        ========================================== */
+
+        .content {
+            padding: 30px;
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        /* ==========================================
+           PAGE HEADER
+        ========================================== */
+
+        .page-header {
+            margin-bottom: 25px;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .page-header::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 3px;
+            width: 4px;
+            height: 45px;
+            border-radius: 4px;
+            background: linear-gradient(var(--accent), var(--primary-light));
+        }
+
+        .page-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 5px;
+        }
+
+        .page-header p {
+            margin: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .page-header .badge {
+            margin-left: 8px;
+            padding: 5px 9px;
+            color: #0756C9 !important;
+            background: #E2F0FF !important;
+            font-size: 10px;
+            letter-spacing: .5px;
+        }
+
+        /* ==========================================
+           FORM CARD
+        ========================================== */
+
+        .form-card {
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, .94);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid #E7EDF5;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+        }
+
+        .form-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #4AA3FF, var(--accent), #F05A7E);
+        }
+
+        .action-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 26px;
+            padding: 14px;
+            border: 1px solid #E7EDF5;
+            border-radius: 12px;
+            background: linear-gradient(110deg, #F8FAFE, #F3F8FF);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+        }
+
+        .action-toolbar small {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #E7EDF5;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .section-title::before {
+            content: "\f1ad";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 27px;
+            height: 27px;
+            border-radius: 8px;
+            color: var(--primary);
+            background: #E6F0FF;
+            font-family: "Font Awesome 6 Free";
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        /* ==========================================
+           FORM
+        ========================================== */
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 7px;
+        }
+
+        .form-control {
+            height: 43px;
+            border-radius: 9px;
+            border: 1px solid #DCE5F0;
+            font-size: {{ appearance.font_size }};
+            color: {{ appearance.field_color }};
+            background: {{ appearance.field_background }};
+            background: #FCFDFF;
+            transition: border-color .2s, box-shadow .2s, transform .2s;
+        }
+
+        .form-control:hover {
+            border-color: #AFC8E8;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(7, 86, 201, 0.10);
+        }
+
+        /* ==========================================
+           BUTTONS
+        ========================================== */
+
+        .button-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .button-area .btn-custom {
+            min-width: 112px;
+        }
+
+        .btn-custom {
+            border: none;
+            border-radius: 9px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #677589, #4E5D70);
+            color: white;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #0875ED, #0756C9);
+            color: white;
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, #FFB12B, #ED8100);
+            color: white;
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, #20A66A, #147A4B);
+            color: white;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #EF5968, #C92F43);
+            color: white;
+        }
+
+        .btn-clear {
+            background: #EEF2F7;
+            color: #253858;
+        }
+
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            opacity: 0.90;
+            box-shadow: 0 7px 15px rgba(25, 65, 120, .16);
+        }
+
+        /* ==========================================
+           STATUS MESSAGE
+        ========================================== */
+
+        #message {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+
+        .success-message {
+            background: #D1E7DD;
+            color: #0F5132;
+            border: 1px solid #BADBCC;
+        }
+
+        .error-message {
+            background: #F8D7DA;
+            color: #842029;
+            border: 1px solid #F5C2C7;
+        }
+
+        .record-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 18px;
+            padding: 10px 14px;
+            border-radius: 9px;
+            background: #EEF4FC;
+            color: var(--secondary);
+            font-size: 12px;
+        }
+
+        .record-meta i {
+            color: var(--teal);
+        }
+
+        .records-panel {
+            display: none;
+            margin-top: 24px;
+            overflow-x: auto;
+        }
+
+        .records-panel table {
+            min-width: 900px;
+            margin-bottom: 0;
+            font-size: 12px;
+        }
+
+        .records-panel thead th {
+            color: var(--secondary);
+            background: #EAF3FF;
+            border-bottom-color: #CFE1F8;
+            white-space: nowrap;
+        }
+
+        .records-panel tbody tr {
+            cursor: pointer;
+        }
+
+        .records-panel tbody tr:hover {
+            background: #FFF8E9;
+        }
+
+        .form-control[readonly] {
+            background: #F4F7FC;
+            cursor: not-allowed;
+        }
+
+        .search-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(6, 26, 76, .45);
+        }
+
+        .search-modal[hidden] {
+            display: none;
+        }
+
+        .search-modal-card {
+            width: min(470px, 100%);
+            padding: 25px;
+            border: 1px solid #DCEAFF;
+            border-radius: 18px;
+            background: white;
+            box-shadow: 0 25px 70px rgba(6, 26, 76, .25);
+        }
+
+        .search-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 22px;
+        }
+
+        .search-modal-header h3 {
+            margin: 0;
+            color: var(--secondary);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .search-modal-header h3 i {
+            color: var(--primary);
+            margin-right: 8px;
+        }
+
+        .search-modal-close {
+            border: 0;
+            color: var(--muted);
+            background: transparent;
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .search-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .search-results {
+            display: none;
+            max-height: 260px;
+            margin-top: 20px;
+            overflow-y: auto;
+            border-top: 1px solid #E7EDF5;
+        }
+
+        .search-result {
+            display: grid;
+            grid-template-columns: 35px 1fr auto;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            padding: 12px 8px;
+            border: 0;
+            border-bottom: 1px solid #E7EDF5;
+            color: var(--text);
+            text-align: left;
+            background: white;
+            cursor: pointer;
+        }
+
+        .search-result:hover {
+            background: #F2F7FF;
+        }
+
+        .search-result-number {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .search-result strong {
+            display: block;
+            font-size: 12px;
+        }
+
+        .search-result small {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 768px) {
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .form-card {
+                padding: 20px;
+            }
+
+            .button-area {
+                width: 100%;
+            }
+
+            .btn-custom {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+
+    <!-- ==========================================
+         TOP BAR
+    ========================================== -->
+
+    <header class="topbar">
+
+        <div class="page-title">
+
+            <button
+                class="back-btn"
+                type="button"
+                onclick="goDashboard()"
+                title="Back to Dashboard">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </button>
+
+            <h4>GSM</h4>
+
+        </div>
+
+
+        <div>
+            {% if company_image_url %}<img class="company-image" src="{{ company_image_url }}" alt="Company logo">{% endif %}
+
+            <i
+                class="fa-solid fa-database"
+                style="color:#0756C9; font-size:20px;">
+            </i>
+
+        </div>
+
+    </header>
+
+
+
+    <!-- ==========================================
+         MAIN CONTENT
+    ========================================== -->
+
+    <main class="content">
+
+
+        <div class="page-header">
+
+            <h2>GSM Master</h2>
+
+            <p>
+                Manage GSM records and SIM information.
+                <span class="badge text-bg-primary text-uppercase">{{ role }}</span>
+            </p>
+
+        </div>
+
+
+
+        <div class="form-card">
+
+
+            <div class="section-title">
+                GSM Record Details
+            </div>
+
+
+            <form id="gsmForm" onreset="handleFormReset()">
+
+                <div class="action-toolbar">
+                    <small>
+                        <i class="fa-solid fa-circle-info me-1"></i>
+                        {% if can_search %}
+                        Search an existing SIM or start a new record.
+                        {% else %}
+                        Enter a SIM NO from your report and update only your assigned fields.
+                        {% endif %}
+                        SIM NO is the permanent record identifier.
+                    </small>
+
+                    <div class="button-area">
+                        {% if can_save %}
+                        <button type="button" class="btn-custom btn-add" onclick="addRecord()">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </button>
+                        <button type="button" class="btn-custom btn-save" onclick="saveRecord()">
+                            <i class="fa-solid fa-floppy-disk"></i> Save
+                        </button>
+                        {% endif %}
+                        {% if can_search %}
+                        <button type="button" class="btn-custom btn-search" onclick="searchRecord()">
+                            <i class="fa-solid fa-magnifying-glass"></i> Search
+                        </button>
+                        <button type="button" class="btn-custom btn-search" onclick="loadAllRecords()">
+                            <i class="fa-solid fa-list"></i> All
+                        </button>
+                        {% endif %}
+                        <button type="button" class="btn-custom btn-update" onclick="updateRecord()">
+                            <i class="fa-solid fa-pen-to-square"></i> Update
+                        </button>
+                        {% if can_delete %}
+                        <button type="button" class="btn-custom btn-delete" onclick="deleteRecord()">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                        {% endif %}
+                        <a class="btn-custom btn-search text-decoration-none" href="{{ url_for('download_gsm_report') }}">
+                            <i class="fa-solid fa-file-excel"></i> Report
+                        </a>
+                        <button type="reset" class="btn-custom btn-clear">
+                            <i class="fa-solid fa-eraser"></i> Clear
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+
+
+                    <!-- Sim Received Date -->
+
+                    {% if role == "admin" %}<div class="col-md-4">
+
+                        <label class="form-label">
+                            Sim Received Date
+                        </label>
+
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="Sim_Received_Date"
+                            name="Sim_Received_Date">
+
+                    </div>{% endif %}
+
+
+
+                    <!-- SIM NO -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            SIM NO
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="SIM_NO"
+                            name="SIM_NO"
+                            placeholder="Enter SIM Number">
+
+                    </div>
+
+
+
+                    <!-- Mobile No -->
+                    {% if role == "admin" %}
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Mobile No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Mobile_No"
+                            name="Mobile_No"
+                            placeholder="Enter Mobile Number">
+
+                    </div>
+                    {% endif %}
+
+
+
+                    <!-- IMEI Number -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            IMEI Number
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="IMEI_Number"
+                            name="IMEI_Number"
+                            placeholder="Enter IMEI Number">
+
+                    </div>
+
+
+
+                    <!-- Branch -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Branch
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Branch"
+                            name="Branch"
+                            placeholder="Enter Branch">
+
+                    </div>
+
+
+
+                    <!-- LO No / MOD No -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            LO No / MOD No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="LO_No_MOD_no"
+                            name="LO_No_MOD_no"
+                            placeholder="Enter LO No / MOD No">
+
+                    </div>
+
+
+
+                    <!-- Site Name -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Site Name
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Site_Name_"
+                            name="Site_Name_"
+                            placeholder="Enter Site Name">
+
+                    </div>
+
+
+
+                    <!-- CARD NO -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            CARD NO
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="CARD_NO"
+                            name="CARD_NO"
+                            placeholder="Enter CARD Number">
+
+                    </div>
+
+
+
+                    <!-- Main CARD SR No -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Main CARD SR No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Main_CARD_SR_No"
+                            name="Main_CARD_SR_No"
+                            placeholder="Enter Main CARD SR No">
+
+                    </div>
+
+
+
+                    <!-- COP CARD SR No -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            COP CARD SR No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="COP_CARD_SR_No"
+                            name="COP_CARD_SR_No"
+                            placeholder="Enter COP CARD SR No">
+
+                    </div>
+
+
+
+                    <!-- LPI CARD Sr No -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            LPI CARD Sr No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="LPI_CARD_Sr_No"
+                            name="LPI_CARD_Sr_No"
+                            placeholder="Enter LPI CARD SR No">
+
+                    </div>
+
+
+
+                    <!-- FAS CARD Sr No -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            FAS CARD Sr No
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="FAS_CARD_Sr_No"
+                            name="FAS_CARD_Sr_No"
+                            placeholder="Enter FAS CARD SR No">
+
+                    </div>
+
+
+
+                    <!-- Type -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Type
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Type"
+                            name="Type"
+                            placeholder="Enter Type">
+
+                    </div>
+
+
+
+                    <!-- Database Type -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Database Type
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Database_Type"
+                            name="Database_Type"
+                            placeholder="Enter Database Type">
+
+                    </div>
+
+
+
+                    <!-- Drive Serial Number -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Drive Serial Number
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Drive_Serial_number"
+                            name="Drive_Serial_number"
+                            placeholder="Enter Drive Serial Number">
+
+                    </div>
+
+
+
+                    <!-- Drive Barcode -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Drive Barcode
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Drive_Barcode"
+                            name="Drive_Barcode"
+                            placeholder="Enter Drive Barcode">
+
+                    </div>
+
+
+
+                    <!-- SIM Status -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            SIM Status
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="Sim_Status"
+                            name="Sim_Status"
+                            placeholder="Enter SIM Status">
+
+                    </div>
+
+
+
+                    <!-- Reject Date -->
+
+                    <div class="col-md-4">
+
+                        <label class="form-label">
+                            Reject Date
+                        </label>
+
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="Reject_Date"
+                            name="Reject_Date">
+
+                    </div>
+
+
+                </div>
+
+
+
+            </form>
+
+
+            <div id="message"></div>
+            <div id="recordMeta" class="record-meta d-none" aria-live="polite">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Record loaded.</span>
+            </div>
+            <div id="recordsPanel" class="records-panel">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>SIM No</th>{% if role == "admin" %}<th>Mobile No</th>{% endif %}<th>Branch</th>
+                            <th>Site Name</th><th>SIM Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody"></tbody>
+                </table>
+            </div>
+
+            <div id="searchModal" class="search-modal" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle" hidden>
+                <div class="search-modal-card">
+                    <div class="search-modal-header">
+                        <h3 id="searchModalTitle"><i class="fa-solid fa-magnifying-glass"></i> Search GSM Records</h3>
+                        <button type="button" class="search-modal-close" onclick="closeSearchModal()" aria-label="Close search">&times;</button>
+                    </div>
+                    <label class="form-label" for="searchField">Search by</label>
+                    <select id="searchField" class="form-control">
+                        {% for field in ["SIM_NO", "IMEI_Number", "LO_No_MOD_no", "CARD_NO", "Main_CARD_SR_No", "COP_CARD_SR_No", "LPI_CARD_Sr_No", "FAS_CARD_Sr_No"] %}
+                        <option value="{{ field }}">{{ field.replace("_", " ") }}</option>
+                        {% endfor %}
+                    </select>
+                    <label class="form-label mt-3" for="searchValue">Value</label>
+                    <input id="searchValue" class="form-control" type="text" placeholder="Enter value" autocomplete="off">
+                    <div id="searchResults" class="search-results" aria-live="polite"></div>
+                    <div class="search-modal-actions">
+                        <button type="button" class="btn-custom btn-clear" onclick="closeSearchModal()">Cancel</button>
+                        <button type="button" class="btn-custom btn-search" onclick="submitSearch()">Search</button>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
+    </main>
+
+
+
+    <!-- ==========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+
+        // BACK TO DASHBOARD
+
+        function goDashboard() {
+
+            window.location.href = "/dashboard";
+
+        }
+
+
+
+        // SHOW MESSAGE
+
+        function showMessage(message, type) {
+
+            const messageBox =
+                document.getElementById("message");
+
+            messageBox.style.display = "block";
+
+            messageBox.className =
+                type === "success"
+                    ? "success-message"
+                    : "error-message";
+
+            messageBox.innerText = message;
+
+        }
+
+
+
+        // CLEAR MESSAGE
+
+        function clearMessage() {
+
+            const messageBox =
+                document.getElementById("message");
+
+            messageBox.style.display = "none";
+
+            messageBox.innerText = "";
+
+        }
+
+        const GSM_FIELDS = [
+            "Sim_Received_Date", "SIM_NO", {% if role == "admin" %}"Mobile_No", {% endif %}"IMEI_Number",
+            "Branch", "LO_No_MOD_no", "Site_Name_", "CARD_NO",
+            "Main_CARD_SR_No", "COP_CARD_SR_No", "LPI_CARD_Sr_No",
+            "FAS_CARD_Sr_No", "Type", "Database_Type",
+            "Drive_Serial_number", "Drive_Barcode", "Sim_Status", "Reject_Date"
+        ];
+        const USER_ROLE = {{ role|tojson }};
+        const EDITABLE_FIELDS = new Set({{ editable_fields|tojson }});
+
+        function applyRoleAffordances() {
+            GSM_FIELDS.forEach((field) => {
+                const input = document.getElementById(field);
+                if (input && field !== "SIM_NO") {
+                    input.disabled = !EDITABLE_FIELDS.has(field);
+                    input.title = input.disabled
+                        ? "This field is read-only for your role."
+                        : "";
+                }
+            });
+        }
+
+        function setSimReadOnly(readOnly) {
+            document.getElementById("SIM_NO").readOnly = readOnly;
+        }
+
+        function showRecordMeta(message) {
+            const meta = document.getElementById("recordMeta");
+            meta.querySelector("span").innerText = message;
+            meta.classList.remove("d-none");
+        }
+
+        function hideRecordMeta() {
+            document.getElementById("recordMeta").classList.add("d-none");
+        }
+
+        function handleFormReset() {
+            setSimReadOnly(false);
+            hideRecordMeta();
+            clearMessage();
+        }
+
+        function setFormData(data) {
+            GSM_FIELDS.forEach((field) => {
+                const input = document.getElementById(field);
+                if (input) {
+                    const value = data[field] || "";
+                    input.value = input.type === "date"
+                        ? String(value).slice(0, 10)
+                        : value;
+                }
+            });
+        }
+
+        async function requestApi(url, options) {
+            const response = await fetch(url, options);
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "The request could not be completed.");
+            }
+            return result;
+        }
+
+
+
+        // GET FORM DATA
+
+        function getFormData() {
+
+            return {
+
+                Sim_Received_Date:
+                    document.getElementById("Sim_Received_Date").value,
+
+                SIM_NO:
+                    document.getElementById("SIM_NO").value.trim(),
+
+                {% if role == "admin" %}Mobile_No:
+                    document.getElementById("Mobile_No").value.trim(),{% endif %}
+
+                IMEI_Number:
+                    document.getElementById("IMEI_Number").value.trim(),
+
+                Branch:
+                    document.getElementById("Branch").value.trim(),
+
+                LO_No_MOD_no:
+                    document.getElementById("LO_No_MOD_no").value.trim(),
+
+                Site_Name_:
+                    document.getElementById("Site_Name_").value.trim(),
+
+                CARD_NO:
+                    document.getElementById("CARD_NO").value.trim(),
+
+                Main_CARD_SR_No:
+                    document.getElementById("Main_CARD_SR_No").value.trim(),
+
+                COP_CARD_SR_No:
+                    document.getElementById("COP_CARD_SR_No").value.trim(),
+
+                LPI_CARD_Sr_No:
+                    document.getElementById("LPI_CARD_Sr_No").value.trim(),
+
+                FAS_CARD_Sr_No:
+                    document.getElementById("FAS_CARD_Sr_No").value.trim(),
+
+                Type:
+                    document.getElementById("Type").value.trim(),
+
+                Database_Type:
+                    document.getElementById("Database_Type").value.trim(),
+
+                Drive_Serial_number:
+                    document.getElementById("Drive_Serial_number").value.trim(),
+
+                Drive_Barcode:
+                    document.getElementById("Drive_Barcode").value.trim(),
+
+                Sim_Status:
+                    document.getElementById("Sim_Status").value.trim(),
+
+                Reject_Date:
+                    document.getElementById("Reject_Date").value
+
+            };
+
+        }
+
+        function getUpdateData() {
+            const data = { SIM_NO: document.getElementById("SIM_NO").value.trim() };
+            EDITABLE_FIELDS.forEach((field) => {
+                const input = document.getElementById(field);
+                if (input) {
+                    data[field] = input.value;
+                }
+            });
+            return data;
+        }
+
+
+
+        // ADD RECORD
+
+        function addRecord() {
+
+            document
+                .getElementById("gsmForm")
+                .reset();
+
+            clearMessage();
+            hideRecordMeta();
+            setSimReadOnly(false);
+
+            document
+                .getElementById("SIM_NO")
+                .focus();
+
+            showMessage(
+                "New GSM record is ready. Enter the details and click Save.",
+                "success"
+            );
+
+        }
+
+
+
+        // SAVE RECORD
+
+        async function saveRecord() {
+
+            const data = getFormData();
+
+            if (!data.SIM_NO) {
+
+                showMessage(
+                    "SIM NO is required.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            try {
+                await requestApi("/gsm/save", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+                setSimReadOnly(true);
+                showRecordMeta("Record saved successfully.");
+                showMessage("GSM record saved successfully.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            }
+
+        }
+
+
+
+        // SEARCH RECORD
+
+        function searchRecord() {
+            const modal = document.getElementById("searchModal");
+            modal.hidden = false;
+            document.getElementById("searchValue").value = "";
+            document.getElementById("searchResults").replaceChildren();
+            document.getElementById("searchResults").style.display = "none";
+            document.getElementById("searchValue").focus();
+        }
+
+        function closeSearchModal() {
+            document.getElementById("searchModal").hidden = true;
+        }
+
+        async function submitSearch() {
+            const field = document.getElementById("searchField").value;
+            let value = document.getElementById("searchValue").value.trim();
+            if (field === "LO_No_MOD_no") {
+                value = value.replace(/\D/g, "");
+                document.getElementById("searchValue").value = value;
+            }
+            if (!value) {
+                showMessage(
+                    field === "LO_No_MOD_no"
+                        ? "Enter numbers only for LO No / MOD No search."
+                        : "Enter a value to search.",
+                    "error"
+                );
+                return;
+            }
+            showMessage("Searching by " + field + "…", "success");
+
+            try {
+                const result = await requestApi(
+                    "/gsm/search?field=" + encodeURIComponent(field) +
+                    "&value=" + encodeURIComponent(value)
+                );
+                showSearchResults(result.data, field);
+                showMessage(result.count + " matching GSM record(s) found. Select one to load it.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            }
+        }
+
+        function showSearchResults(records, searchField) {
+            const results = document.getElementById("searchResults");
+            results.replaceChildren();
+            records.forEach((record, index) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "search-result";
+                const number = document.createElement("span");
+                number.className = "search-result-number";
+                number.textContent = String(index + 1);
+                const details = document.createElement("span");
+                const primary = document.createElement("strong");
+                primary.textContent = record.SIM_NO || "SIM number unavailable";
+                const secondary = document.createElement("small");
+                secondary.textContent = searchField + ": " + (record[searchField] || "") +
+                    (record.Branch ? " | Branch: " + record.Branch : "");
+                details.append(primary, secondary);
+                const icon = document.createElement("i");
+                icon.className = "fa-solid fa-chevron-right";
+                button.append(number, details, icon);
+                button.addEventListener("click", () => {
+                    setFormData(record);
+                    setSimReadOnly(true);
+                    closeSearchModal();
+                    showRecordMeta("Showing the record for SIM NO " + record.SIM_NO + ".");
+                    showMessage("GSM record loaded.", "success");
+                });
+                results.appendChild(button);
+            });
+            results.style.display = "block";
+        }
+
+        async function loadAllRecords() {
+            try {
+                const result = await requestApi("/gsm/all");
+                const body = document.getElementById("recordsBody");
+                body.replaceChildren();
+                result.data.forEach((record) => {
+                    const row = document.createElement("tr");
+                    const values = [record.SIM_NO];
+                    {% if role == "admin" %}values.push(record.Mobile_No);{% endif %}
+                    values.push(record.Branch, record.Site_Name_, record.Sim_Status);
+                    values.forEach((value) => {
+                        const cell = document.createElement("td");
+                        cell.textContent = value || "";
+                        row.appendChild(cell);
+                    });
+                    row.addEventListener("click", () => {
+                        setFormData(record);
+                        setSimReadOnly(true);
+                        showRecordMeta("Showing the record for SIM NO " + record.SIM_NO + ".");
+                    });
+                    body.appendChild(row);
+                });
+                document.getElementById("recordsPanel").style.display = "block";
+                showMessage(result.count + " GSM record(s) loaded.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            }
+        }
+
+
+
+        // UPDATE RECORD
+
+        async function updateRecord() {
+
+            const data = getUpdateData();
+
+            if (!data.SIM_NO) {
+
+                showMessage(
+                    "SIM NO is required for update.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            try {
+                const updateData = { SIM_NO: data.SIM_NO };
+                EDITABLE_FIELDS.forEach((field) => {
+                    if (field !== "SIM_NO") {
+                        updateData[field] = data[field];
+                    }
+                });
+                await requestApi("/gsm/update", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(updateData)
+                });
+                setSimReadOnly(true);
+                showRecordMeta("Record updated successfully.");
+                showMessage("GSM record updated successfully.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            }
+
+        }
+
+
+
+        // DELETE RECORD
+
+        async function deleteRecord() {
+
+            const simNo =
+                document
+                    .getElementById("SIM_NO")
+                    .value
+                    .trim();
+
+            if (!simNo) {
+
+                showMessage(
+                    "Enter SIM NO to delete.",
+                    "error"
+                );
+
+                return;
+
+            }
+
+            if (confirm("Are you sure you want to delete SIM NO: " + simNo + "?")) {
+
+                try {
+                    await requestApi("/gsm/delete", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ SIM_NO: simNo })
+                    });
+                    document.getElementById("gsmForm").reset();
+                    setSimReadOnly(false);
+                    hideRecordMeta();
+                    showMessage("GSM record deleted successfully.", "success");
+                } catch (error) {
+                    showMessage(error.message, "error");
+                }
+            }
+
+        }
+
+
+    </script>
+
+    <script>
+        applyRoleAffordances();
+    </script>
+
+
+</body>
+</html>
