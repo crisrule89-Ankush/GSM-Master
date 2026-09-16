@@ -4,7 +4,7 @@ import re
 import zipfile
 import xml.etree.ElementTree as ET
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import wraps
 from html import escape
 
@@ -20,6 +20,8 @@ from flask import (
     session,
 )
 import pyodbc
+from openpyxl import load_workbook
+from openpyxl.utils.exceptions import InvalidFileException
 import traceback
 
 load_dotenv()
@@ -338,68 +340,27 @@ def _xlsx_cell_value(cell, shared_strings):
 
 
 def read_upload_xlsx(file_storage):
-    """Read the first worksheet, returning ``(header, numbered_rows)``."""
+    """Read the first worksheet, preserving typed Excel date cells."""
     raw = file_storage.read(UPLOAD_MAX_BYTES + 1)
     if len(raw) > UPLOAD_MAX_BYTES:
         raise ValueError("The uploaded file is too large (maximum 10 MB).")
 
     try:
-        archive = zipfile.ZipFile(io.BytesIO(raw))
-    except (zipfile.BadZipFile, OSError) as exc:
+        workbook = load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
+    except (InvalidFileException, OSError, ValueError, zipfile.BadZipFile) as exc:
         raise ValueError("Upload a valid .xlsx Excel workbook.") from exc
 
-    with archive:
-        try:
-            sheet_xml = archive.read("xl/worksheets/sheet1.xml")
-        except KeyError as exc:
-            raise ValueError("The workbook does not contain a first worksheet.") from exc
-
-        shared_strings = []
-        if "xl/sharedStrings.xml" in archive.namelist():
-            try:
-                shared_root = ET.fromstring(archive.read("xl/sharedStrings.xml"))
-            except ET.ParseError as exc:
-                raise ValueError("The workbook contains invalid Excel XML.") from exc
-            shared_strings = [
-                "".join(
-                    text.text or ""
-                    for text in item.iter()
-                    if text.tag.rsplit("}", 1)[-1] == "t"
-                )
-                for item in shared_root
-                if item.tag.rsplit("}", 1)[-1] == "si"
-            ]
-
-        try:
-            root = ET.fromstring(sheet_xml)
-        except ET.ParseError as exc:
-            raise ValueError("The workbook contains invalid Excel XML.") from exc
-        worksheet_rows = [
-            row for row in root.iter() if row.tag.rsplit("}", 1)[-1] == "row"
-        ]
+    try:
+        if not workbook.worksheets:
+            raise ValueError("The workbook does not contain a first worksheet.")
         parsed_rows = []
-        for row_position, row in enumerate(worksheet_rows, start=1):
-            values_by_column = {}
-            next_column = 0
-            for cell in row:
-                if cell.tag.rsplit("}", 1)[-1] != "c":
-                    continue
-                reference = cell.attrib.get("r", "")
-                letters = re.match(r"([A-Z]+)", reference.upper())
-                if letters:
-                    column = 0
-                    for letter in letters.group(1):
-                        column = column * 26 + ord(letter) - ord("A") + 1
-                    column -= 1
-                else:
-                    column = next_column
-                next_column = column + 1
-                values_by_column[column] = _xlsx_cell_value(cell, shared_strings)
-
-            width = max(values_by_column, default=-1) + 1
-            values = tuple(values_by_column.get(index, "") for index in range(width))
-            excel_row = int(row.attrib.get("r", row_position))
+        for excel_row, cells in enumerate(workbook.worksheets[0].iter_rows(), start=1):
+            values = tuple(cell.value for cell in cells)
+            while values and values[-1] is None:
+                values = values[:-1]
             parsed_rows.append((excel_row, values))
+    finally:
+        workbook.close()
 
     if not parsed_rows:
         raise ValueError("The workbook must contain a header row.")
@@ -408,6 +369,70 @@ def read_upload_xlsx(file_storage):
 
 def _normalise_upload_value(value):
     return "" if value is None else str(value).strip()
+
+
+def _parse_upload_date(value):
+    """Convert Excel and text date values to a value pyodbc binds as SQL DATE."""
+    if value is None or value == "":
+        return None
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        if 1 <= value <= 2_958_465:
+            return (datetime(1899, 12, 30) + timedelta(days=float(value))).date()
+
+    text = str(value).strip()
+    if not text:
+        return None
+    for format_string in (
+        "%Y-%m-%d", "%Y/%m/%d", "%d/%m/%Y", "%d-%m-%Y", "%d.%m.%Y",
+        "%m/%d/%Y", "%d-%b-%Y", "%d %b %Y", "%d-%B-%Y", "%d %B %Y",
+    ):
+        try:
+            return datetime.strptime(text, format_string).date()
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+    except ValueError as exc:
+        raise ValueError(
+            "must be an Excel date or a date such as YYYY-MM-DD, DD/MM/YYYY, or MM/DD/YYYY"
+        ) from exc
+
+
+def _prepare_upload_row(row):
+    """Normalise text fields and preserve Sim_Received_Date as a Python date."""
+    if len(row) > len(UPLOAD_COLUMNS):
+        raise ValueError("Too many columns; use the downloaded template.")
+    values = list(row) + [""] * (len(UPLOAD_COLUMNS) - len(row))
+    date_index = UPLOAD_COLUMNS.index("Sim_Received_Date")
+    values[date_index] = _parse_upload_date(values[date_index])
+    return tuple(
+        value if index == date_index else _normalise_upload_value(value)
+        for index, value in enumerate(values)
+    )
+
+
+def _assert_sim_received_date_is_date_column(cursor):
+    """Prevent dates being silently stored in a text-typed SQL column."""
+    cursor.execute(
+        """
+        SELECT DATA_TYPE
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_SCHEMA = 'dbo'
+          AND TABLE_NAME = 'revisedGSM'
+          AND COLUMN_NAME = 'Sim_Received_Date'
+        """
+    )
+    row = cursor.fetchone()
+    data_type = str(row[0]).strip().lower() if row else ""
+    if data_type not in {"date", "datetime", "datetime2"}:
+        raise ValueError(
+            "dbo.revisedGSM.Sim_Received_Date must be DATE, DATETIME, or DATETIME2. "
+            "Convert the existing column before uploading."
+        )
 
 
 def _upload_report(inserted, skipped_existing, skipped_uploaded, invalid_rows):
@@ -457,17 +482,16 @@ def process_gsm_upload(file_storage):
     seen_uploaded = set()
     skipped_uploaded = 0
     for excel_row, row in numbered_rows:
-        values = tuple(_normalise_upload_value(value) for value in row)
+        try:
+            values = _prepare_upload_row(row)
+        except ValueError as exc:
+            reason = str(exc)
+            if not reason.startswith("Too many columns"):
+                reason = "Sim_Received_Date {}".format(reason)
+            invalid_rows.append({"row": excel_row, "reason": reason})
+            continue
         if not any(values):
             continue
-        if len(values) > len(UPLOAD_COLUMNS):
-            invalid_rows.append({
-                "row": excel_row,
-                "reason": "Too many columns; use the downloaded template.",
-            })
-            continue
-
-        values += ("",) * (len(UPLOAD_COLUMNS) - len(values))
         sim_no = values[UPLOAD_COLUMNS.index("SIM_NO")]
         if not sim_no:
             invalid_rows.append({"row": excel_row, "reason": "SIM_NO is required."})
@@ -487,6 +511,7 @@ def process_gsm_upload(file_storage):
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
+        _assert_sim_received_date_is_date_column(cursor)
         existing = _existing_sim_numbers(
             cursor,
             [row[UPLOAD_COLUMNS.index("SIM_NO")] for row in valid_rows],
