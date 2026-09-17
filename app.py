@@ -685,8 +685,9 @@ def gsmmaster():
         field_settings=load_field_settings(),
         gsm_columns=list(GSM_COLUMNS),
         editable_fields=list(fields_for_role(role)),
-        can_save=role == "admin",
+        can_save=role == "admin" and not is_master_user(),
         can_delete=role == "admin" and not is_master_user(),
+        is_master=is_master_user(),
         can_search=role in {"admin", "electrical", "electronics"},
     )
 
@@ -942,6 +943,12 @@ def get_all_gsm():
 @role_required("admin")
 def save_gsm():
 
+    if is_master_user():
+        return jsonify({
+            "success": False,
+            "message": "Save access is disabled for the master user."
+        }), 403
+
     data = request.get_json(silent=True)
 
     if not data:
@@ -1080,6 +1087,12 @@ def save_gsm():
 @app.route("/gsm/update", methods=["PUT"])
 @role_required("admin", "electrical", "electronics")
 def update_gsm():
+
+    if is_master_user():
+        return jsonify({
+            "success": False,
+            "message": "Update access is disabled for the master user."
+        }), 403
 
     data = request.get_json(silent=True)
 

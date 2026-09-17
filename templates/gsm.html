@@ -634,9 +634,11 @@
                             <i class="fa-solid fa-list"></i> All
                         </button>
                         {% endif %}
+                        {% if not is_master %}
                         <button type="button" class="btn-custom btn-update" onclick="updateRecord()">
                             <i class="fa-solid fa-pen-to-square"></i> Update
                         </button>
+                        {% endif %}
                         {% if can_delete %}
                         <button type="button" class="btn-custom btn-delete" onclick="deleteRecord()">
                             <i class="fa-solid fa-trash"></i> Delete
