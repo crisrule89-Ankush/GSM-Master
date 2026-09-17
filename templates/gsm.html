@@ -350,22 +350,10 @@
 
         #message {
             display: none;
-            margin-top: 20px;
+            margin: 0 0 20px;
             padding: 12px 15px;
             border-radius: 8px;
             font-size: 13px;
-        }
-
-        .success-message {
-            background: #D1E7DD;
-            color: #0F5132;
-            border: 1px solid #BADBCC;
-        }
-
-        .error-message {
-            background: #F8D7DA;
-            color: #842029;
-            border: 1px solid #F5C2C7;
         }
 
         .record-meta {
@@ -609,6 +597,7 @@
 
         <div class="form-card">
 
+            <div id="message" aria-live="polite"></div>
 
             <div class="section-title">
                 GSM Record Details
@@ -1012,7 +1001,6 @@
             </form>
 
 
-            <div id="message"></div>
             <div id="recordMeta" class="record-meta d-none" aria-live="polite">
                 <i class="fa-solid fa-circle-check"></i>
                 <span>Record loaded.</span>
@@ -1118,6 +1106,68 @@
         ];
         const USER_ROLE = {{ role|tojson }};
         const EDITABLE_FIELDS = new Set({{ editable_fields|tojson }});
+        let FIELD_SETTINGS = {{ field_settings|tojson }};
+
+        function applyFieldSettings() {
+            GSM_FIELDS.forEach((field) => {
+                const setting = FIELD_SETTINGS[field] || { type: "text", options: [] };
+                const requestedType = setting.type === "dropdown" ? "dropdown" : (setting.type === "date" ? "date" : "text");
+                let control = document.getElementById(field);
+                if (!control) return;
+                const existingValue = control.value || "";
+
+                if (requestedType === "dropdown") {
+                    if (control.tagName !== "SELECT") {
+                        const select = document.createElement("select");
+                        select.id = control.id;
+                        select.name = control.name;
+                        select.className = control.className;
+                        select.disabled = control.disabled;
+                        select.title = control.title;
+                        control.replaceWith(select);
+                        control = select;
+                    }
+                    control.replaceChildren(new Option("Select an option", ""));
+                    (setting.options || []).forEach((option) => {
+                        const value = String(option).trim();
+                        if (value) control.appendChild(new Option(value, value));
+                    });
+                    if (existingValue && !Array.from(control.options).some((option) => option.value === existingValue)) {
+                        control.appendChild(new Option(existingValue, existingValue));
+                    }
+                    control.value = existingValue;
+                    return;
+                }
+
+                const desiredInputType = requestedType === "date" ? "date" : "text";
+                if (control.tagName !== "INPUT" || control.type !== desiredInputType) {
+                    const input = document.createElement("input");
+                    input.id = control.id;
+                    input.name = control.name;
+                    input.className = control.className;
+                    input.placeholder = control.placeholder || "";
+                    input.disabled = control.disabled;
+                    input.readOnly = control.readOnly;
+                    input.title = control.title;
+                    input.type = desiredInputType;
+                    control.replaceWith(input);
+                    control = input;
+                }
+                control.value = existingValue;
+            });
+        }
+
+        window.addEventListener("storage", (event) => {
+            if (event.key !== "gsmFieldSettingsUpdated" || !event.newValue) return;
+            try {
+                FIELD_SETTINGS = JSON.parse(event.newValue);
+                applyFieldSettings();
+                applyRoleAffordances();
+                showMessage("GSM field settings updated.", "success");
+            } catch (error) {
+                // Ignore malformed browser storage values; server settings remain authoritative.
+            }
+        });
 
         function applyRoleAffordances() {
             GSM_FIELDS.forEach((field) => {
@@ -1156,6 +1206,9 @@
                 const input = document.getElementById(field);
                 if (input) {
                     const value = data[field] || "";
+                    if (input.tagName === "SELECT" && value && !Array.from(input.options).some((option) => option.value === String(value))) {
+                        input.appendChild(new Option(String(value), String(value)));
+                    }
                     input.value = input.type === "date"
                         ? String(value).slice(0, 10)
                         : value;
@@ -1171,8 +1224,6 @@
             }
             return result;
         }
-
-
 
         // GET FORM DATA
 
@@ -1502,6 +1553,7 @@
     </script>
 
     <script>
+        applyFieldSettings();
         applyRoleAffordances();
     </script>
 

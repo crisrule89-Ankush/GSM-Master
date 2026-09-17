@@ -128,6 +128,15 @@ COMPANY_IMAGE_DIR = os.path.join(app.root_path, "uploads")
 COMPANY_IMAGE_NAME = "company-brand"
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"}
 APPEARANCE_PATH = os.path.join(app.root_path, "appearance.json")
+MASTER_USERNAME = "master"
+GSM_FIELD_CONTROL_TYPES = {"text", "date", "dropdown"}
+GSM_FIELD_SETTINGS_DEFAULTS = {
+    field: {
+        "type": "date" if field in {"Sim_Received_Date", "Reject_Date"} else "text",
+        "options": [],
+    }
+    for field in GSM_COLUMNS
+}
 
 # SIM_NO identifies a record and is deliberately not included in any update set.
 REPORT_FIELDS = {
@@ -183,9 +192,15 @@ def current_role():
 
 def role_for_login(username, database_role):
     username_role = str(username).strip().lower()
+    if username_role == MASTER_USERNAME:
+        return "admin"
     if username_role in {"admin", "electrical", "electronics"}:
         return username_role
     return str(database_role).strip().lower()
+
+
+def is_master_user():
+    return str(session.get("username", "")).strip().lower() == MASTER_USERNAME
 
 
 def fields_for_role(role=None):
@@ -200,17 +215,47 @@ def company_image_path():
     return None
 
 
-def load_appearance():
-    defaults = {"field_color": "#253858", "field_background": "#ffffff", "font_family": "Poppins", "font_size": "13px"}
+def _load_appearance_document():
     try:
         with open(APPEARANCE_PATH, encoding="utf-8") as appearance_file:
             saved = json.load(appearance_file)
-        return {**defaults, **{key: str(value) for key, value in saved.items() if key in defaults}}
+        return saved if isinstance(saved, dict) else {}
     except FileNotFoundError:
-        return defaults
+        return {}
     except (OSError, ValueError):
         app.logger.exception("Unable to read appearance settings.")
-        return defaults
+        return {}
+
+
+def load_appearance():
+    defaults = {"field_color": "#253858", "field_background": "#ffffff", "font_family": "Poppins", "font_size": "13px"}
+    saved = _load_appearance_document()
+    return {**defaults, **{key: str(value) for key, value in saved.items() if key in defaults}}
+
+
+def load_field_settings():
+    """Load safe control types and dropdown options for GSM fields."""
+    settings = {
+        field: {"type": config["type"], "options": list(config["options"])}
+        for field, config in GSM_FIELD_SETTINGS_DEFAULTS.items()
+    }
+    saved = _load_appearance_document().get("field_settings", {})
+    if not isinstance(saved, dict):
+        return settings
+    for field, config in saved.items():
+        if field not in settings or not isinstance(config, dict):
+            continue
+        control_type = str(config.get("type", settings[field]["type"])).lower()
+        if control_type not in GSM_FIELD_CONTROL_TYPES:
+            control_type = settings[field]["type"]
+        options = config.get("options", [])
+        if not isinstance(options, list):
+            options = []
+        settings[field] = {
+            "type": control_type,
+            "options": [str(option).strip() for option in options if str(option).strip()][:100],
+        }
+    return settings
 
 
 def report_fields_for_role(role=None):
@@ -637,9 +682,11 @@ def gsmmaster():
         "gsm.html",
         role=role,
         appearance=load_appearance(),
+        field_settings=load_field_settings(),
+        gsm_columns=list(GSM_COLUMNS),
         editable_fields=list(fields_for_role(role)),
         can_save=role == "admin",
-        can_delete=role == "admin",
+        can_delete=role == "admin" and not is_master_user(),
         can_search=role in {"admin", "electrical", "electronics"},
     )
 
@@ -1157,6 +1204,12 @@ def update_gsm():
 @role_required("admin")
 def delete_gsm():
 
+    if is_master_user():
+        return jsonify({
+            "success": False,
+            "message": "Delete access is disabled for the master user."
+        }), 403
+
     data = request.get_json(silent=True)
 
     sim_no = ""
@@ -1330,6 +1383,17 @@ def upload_gsm():
     })
 
 
+@app.route("/admin", methods=["GET"])
+@role_required("admin")
+def admin_page():
+    return render_template(
+        "admin.html",
+        appearance=load_appearance(),
+        field_settings=load_field_settings(),
+        gsm_columns=list(GSM_COLUMNS),
+    )
+
+
 @app.route("/admin/company-image", methods=["POST", "DELETE"])
 @role_required("admin")
 def manage_company_image():
@@ -1371,6 +1435,44 @@ def admin_appearance():
     with open(APPEARANCE_PATH, "w", encoding="utf-8") as appearance_file:
         json.dump(current, appearance_file, indent=2)
     return jsonify({"success": True, "data": current, "message": "Appearance settings saved."})
+
+
+@app.route("/admin/field-settings", methods=["GET", "POST"])
+@role_required("admin")
+def admin_field_settings():
+    if request.method == "GET":
+        return jsonify({"success": True, "data": load_field_settings()})
+
+    data = request.get_json(silent=True) or {}
+    incoming = data.get("field_settings")
+    if not isinstance(incoming, dict):
+        return jsonify({"success": False, "message": "Field settings are required."}), 400
+
+    settings = load_field_settings()
+    for field in GSM_COLUMNS:
+        config = incoming.get(field)
+        if not isinstance(config, dict):
+            continue
+        control_type = str(config.get("type", settings[field]["type"])).lower()
+        if control_type not in GSM_FIELD_CONTROL_TYPES:
+            return jsonify({"success": False, "message": "Unsupported control type for {}.".format(field)}), 400
+        options = config.get("options", [])
+        if not isinstance(options, list):
+            return jsonify({"success": False, "message": "Dropdown options for {} must be a list.".format(field)}), 400
+        settings[field] = {
+            "type": control_type,
+            "options": [str(option).strip() for option in options if str(option).strip()][:100],
+        }
+
+    saved = _load_appearance_document()
+    saved["field_settings"] = settings
+    try:
+        with open(APPEARANCE_PATH, "w", encoding="utf-8") as appearance_file:
+            json.dump(saved, appearance_file, indent=2)
+    except OSError:
+        app.logger.exception("Unable to save GSM field settings.")
+        return jsonify({"success": False, "message": "Unable to save field settings."}), 500
+    return jsonify({"success": True, "data": settings, "message": "GSM field settings saved."})
 
 
 @app.route("/gsm/upload/template", methods=["GET"])
