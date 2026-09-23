@@ -990,9 +990,10 @@ def save_gsm():
             conn.close()
 
             return jsonify({
-                "success": False,
-                "message": "SIM No. already exists."
-            }), 409
+                "success": True,
+                "inserted": False,
+                "message": "A GSM record with this SIM No. already exists; the duplicate was skipped."
+            })
 
         sql = """
             INSERT INTO dbo.revisedGSM
@@ -1136,28 +1137,46 @@ def update_gsm():
         cursor = conn.cursor()
 
         update_fields = [field for field in fields_for_role(role) if field in update_data]
+
+        # Do not block status/date edits because an existing LO number happens
+        # to be shared. Validate a conflict only when this update changes LO.
         lo_no_mod_no = str(update_data.get("LO_No_MOD_no") or "").strip()
-        if lo_no_mod_no:
+        if lo_no_mod_no and "LO_No_MOD_no" in update_fields:
             cursor.execute(
-                """
-                SELECT TOP 1 SIM_NO, LO_No_MOD_no
-                FROM dbo.revisedGSM
-                WHERE LTRIM(RTRIM(REPLACE(LO_No_MOD_no, '''', ''))) = ?
-                  AND LTRIM(RTRIM(REPLACE(SIM_NO, '''', ''))) <> ?
-                """,
-                (lo_no_mod_no, sim_no),
+                "SELECT TOP 1 LO_No_MOD_no FROM dbo.revisedGSM WHERE SIM_NO = ?",
+                (sim_no,),
             )
-            duplicate = cursor.fetchone()
-            if duplicate:
+            current_record = cursor.fetchone()
+            if not current_record:
                 cursor.close()
                 conn.close()
                 return jsonify({
                     "success": False,
-                    "message": (
-                        "SIM_NO {} + LO_No_MOD_no {} already has an entry "
-                        "in the system."
-                    ).format(str(duplicate[0]).strip(), str(duplicate[1]).strip())
-                }), 409
+                    "message": "SIM No. not found."
+                }), 404
+
+            current_lo_no_mod_no = str(current_record[0] or "").strip()
+            if lo_no_mod_no != current_lo_no_mod_no:
+                cursor.execute(
+                    """
+                    SELECT TOP 1 SIM_NO, LO_No_MOD_no
+                    FROM dbo.revisedGSM
+                    WHERE LTRIM(RTRIM(REPLACE(LO_No_MOD_no, '''', ''))) = ?
+                      AND LTRIM(RTRIM(REPLACE(SIM_NO, '''', ''))) <> ?
+                    """,
+                    (lo_no_mod_no, sim_no),
+                )
+                duplicate = cursor.fetchone()
+                if duplicate:
+                    cursor.close()
+                    conn.close()
+                    return jsonify({
+                        "success": False,
+                        "message": (
+                            "SIM_NO {} + LO_No_MOD_no {} already has an entry "
+                            "in the system."
+                        ).format(str(duplicate[0]).strip(), str(duplicate[1]).strip())
+                    }), 409
 
         sql = "UPDATE dbo.revisedGSM SET {} WHERE SIM_NO = ?".format(
             ", ".join("{} = ?".format(field) for field in update_fields)

@@ -1347,11 +1347,15 @@
             }
 
             try {
-                await requestApi("/gsm/save", {
+                const result = await requestApi("/gsm/save", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(data)
                 });
+                if (result.inserted === false) {
+                    showMessage(result.message, "success");
+                    return;
+                }
                 setSimReadOnly(true);
                 showRecordMeta("Record saved successfully.");
                 showMessage("GSM record saved successfully.", "success");
