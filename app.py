@@ -1507,6 +1507,13 @@ def admin_field_settings():
     return jsonify({"success": True, "data": settings, "message": "GSM field settings saved."})
 
 
+@app.route("/gsm/field-settings", methods=["GET"])
+@role_required("admin", "electrical", "electronics")
+def gsm_field_settings():
+    """Return current control settings to an open GSM page."""
+    return jsonify({"success": True, "data": load_field_settings()})
+
+
 @app.route("/gsm/upload/template", methods=["GET"])
 @app.route("/gsm/upload/template.xlsx", methods=["GET"])
 @role_required("admin")

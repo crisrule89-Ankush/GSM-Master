@@ -1171,6 +1171,30 @@
             }
         });
 
+        let fieldSettingsRefreshPending = false;
+        async function refreshFieldSettings() {
+            if (fieldSettingsRefreshPending) return;
+            fieldSettingsRefreshPending = true;
+            try {
+                const result = await requestApi("/gsm/field-settings");
+                if (JSON.stringify(result.data) !== JSON.stringify(FIELD_SETTINGS)) {
+                    FIELD_SETTINGS = result.data;
+                    applyFieldSettings();
+                    applyRoleAffordances();
+                    showMessage("GSM field settings updated.", "success");
+                }
+            } catch (error) {
+                // Keep the last settings already rendered if refresh is unavailable.
+            } finally {
+                fieldSettingsRefreshPending = false;
+            }
+        }
+
+        window.addEventListener("focus", refreshFieldSettings);
+        document.addEventListener("visibilitychange", () => {
+            if (!document.hidden) refreshFieldSettings();
+        });
+
         function applyRoleAffordances() {
             GSM_FIELDS.forEach((field) => {
                 const input = document.getElementById(field);
