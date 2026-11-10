@@ -255,8 +255,18 @@
             transform: translateY(-50%);
         }
         .input-wrap .toggle-password {
+            position: absolute;
+            z-index: 3;
+            top: 50%;
             right: 17px;
             left: auto;
+            padding: 0;
+            border: 0;
+            color: #83baf2;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 600;
+            transform: translateY(-50%);
             cursor: pointer;
         }
         .form-control {
@@ -361,15 +371,190 @@
             .footer-item { text-align: center; }
         }
     </style>
+
+    <style>
+        /* Reference-style split login: light branding area on the left and a
+           compact navy authentication card on the right. */
+        .login-shell {
+            position: relative;
+            background: linear-gradient(112deg, #f3f9fd 0%, #e8f1f9 53%, #acb8ca 100%);
+        }
+        .login-shell::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto;
+            height: 6px;
+            background: #c7dfd2;
+        }
+        .login-main {
+            width: 100%;
+            max-width: none;
+            min-height: 100vh;
+            grid-template-columns: minmax(0, 1.35fr) minmax(380px, 410px);
+            gap: clamp(30px, 3.2vw, 50px);
+            padding: 0 clamp(24px, 4vw, 52px) 0 clamp(32px, 4.2vw, 54px);
+        }
+        .login-copy {
+            min-height: 100vh;
+            justify-content: flex-start;
+            padding: 0;
+            border-radius: 0;
+            color: var(--ink);
+            background: transparent;
+            box-shadow: none;
+        }
+        .login-copy::before,
+        .login-copy::after,
+        .login-copy .welcome,
+        .login-copy .copy-points,
+        .login-copy .elevator-art {
+            display: none;
+        }
+        .copy-content {
+            width: 100%;
+            max-width: 650px;
+            text-align: left;
+        }
+        .login-company-logo {
+            display: block;
+            width: min(420px, 100%);
+            max-width: 100%;
+            max-height: none;
+            margin: 0 0 14px;
+            object-fit: contain;
+        }
+        .m2m-illustration {
+            display: block;
+            width: min(620px, 100%);
+            height: auto;
+            border: 1px solid rgba(20, 46, 85, .08);
+            border-radius: 18px;
+            box-shadow: 0 18px 42px rgba(9, 26, 57, .18);
+        }
+        .login-copy .brand-logo {
+            color: #1768a7;
+            font-size: clamp(72px, 10vw, 128px);
+        }
+        .login-copy .brand-name {
+            color: #1e2530;
+            font-size: clamp(24px, 3.3vw, 42px);
+        }
+        .brand-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: .015em;
+        }
+        .brand-symbol {
+            position: relative;
+            display: inline-block;
+            width: .82em;
+            height: .68em;
+            margin-right: .02em;
+            background: linear-gradient(to bottom, currentColor 0 24%, transparent 24% 39%, currentColor 39% 61%, transparent 61% 76%, currentColor 76% 100%);
+            transform: translateY(.06em);
+        }
+        .brand-symbol::after {
+            content: "";
+            position: absolute;
+            top: 31%;
+            left: 0;
+            width: 100%;
+            height: 38%;
+            background: #ef2439;
+            clip-path: polygon(0 18%, 67% 18%, 67% 0, 100% 50%, 67% 100%, 67% 82%, 0 82%);
+        }
+        .brand-tagline {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            margin-top: 2px;
+            color: #333b45;
+            font-size: clamp(14px, 1.6vw, 21px);
+            font-weight: 600;
+            letter-spacing: .04em;
+        }
+        .brand-tagline::before,
+        .brand-tagline::after {
+            content: "";
+            width: 42px;
+            height: 3px;
+            background: #6c737a;
+        }
+        .login-card .brand-logo { font-size: 52px; color: #2380b9; transform: scaleX(1.12); }
+        .login-card .brand-name { margin-top: 5px; color: #fff; font-size: 18px; font-weight: 800; text-align: center; }
+        .login-card .brand-tagline { gap: 8px; margin: 2px 0 6px; color: #e0e4f1; font-size: 10px; }
+        .login-card .brand-tagline::before,
+        .login-card .brand-tagline::after { width: 30px; height: 1px; background: #8b9db5; }
+        .login-card {
+            align-self: center;
+            margin: 0;
+            max-width: 410px;
+            min-height: 573px;
+            padding: 28px 24px 20px;
+            border-radius: 26px;
+            color: #f4f7fc;
+            border-color: rgba(119, 158, 205, .55);
+            background:
+                linear-gradient(155deg, #071e47 0%, #06183d 58%, #091c43 100%);
+            box-shadow: 0 26px 56px rgba(8, 24, 55, .3);
+        }
+        .login-card-logo {
+            display: block;
+            width: min(250px, 100%);
+            max-width: 100%;
+            max-height: none;
+            margin: 0 auto 3px;
+            object-fit: contain;
+            filter: brightness(1.35);
+        }
+        .login-card h2 { display: none; }
+        .login-card .login-subtitle { margin: 7px 0 41px; font-size: 12px; letter-spacing: 1px; }
+        .login-card .form-label { font-size: 13px; margin-bottom: 6px; }
+        .login-card .form-control { height: 58px; border-radius: 13px; font-size: 14px; background: rgba(255,255,255,.08); }
+        .login-card .input-wrap { margin-bottom: 18px; }
+        .login-card .login-options { margin: 3px 2px 36px; font-size: 11px; }
+        .login-card .login-btn { height: 50px; border-radius: 12px; font-size: 16px; background: linear-gradient(100deg, #0875ed, #124fd0, #3022d5); box-shadow: 0 13px 28px rgba(0, 83, 221, .28); }
+        .login-card .login-btn:hover { background: linear-gradient(100deg, #1682fa, #1a59dc, #3a30e3); box-shadow: 0 16px 34px rgba(0, 83, 221, .36); }
+        .login-card .secure-note { margin-top: 18px; padding-top: 16px; font-size: 11px; }
+        .login-footer { display: none; }
+        @media (max-width: 980px) {
+            .login-main {
+                min-height: auto;
+                grid-template-columns: 1fr;
+                gap: 18px;
+                padding: 30px 20px 40px;
+            }
+            .login-copy {
+                min-height: auto;
+                padding: 10px 4px;
+            }
+            .copy-content { max-width: 560px; text-align: left; }
+            .login-copy .brand-logo { font-size: clamp(60px, 12vw, 86px); }
+            .login-copy .brand-name { font-size: clamp(22px, 4.5vw, 30px); }
+            .brand-tagline { font-size: clamp(12px, 2.5vw, 16px); }
+            .login-company-logo { width: min(280px, 80%); margin: 0 0 10px; }
+            .m2m-illustration { width: min(420px, 100%); border-radius: 14px; }
+            .login-card { width: min(410px, 100%); min-height: auto; justify-self: center; }
+            .login-card .brand-logo { font-size: 52px; transform: scaleX(1.1); }
+            .login-card .brand-name { font-size: 18px; }
+            .login-card .brand-tagline { font-size: 10px; margin-bottom: 5px; }
+            .login-card .login-subtitle { margin-top: 5px; margin-bottom: 30px; }
+            .login-card .input-wrap { margin-bottom: 15px; }
+            .login-card .form-control { height: 54px; }
+            .login-card .login-options { margin-bottom: 24px; }
+            .login-card { padding: 22px 22px 18px; }
+        }
+    </style>
 </head>
 <body>
 <div class="login-shell">
     <main class="login-main">
         <section class="login-copy" aria-label="Escon Elevators">
             <div class="copy-content">
-                {% if company_image_url %}<img class="company-image" src="{{ company_image_url }}" alt="Company logo">{% endif %}
-                <div class="brand-logo">ESCON</div>
-                <div class="brand-name">Escon Elevators India Pvt. Ltd.</div>
+                <img class="company-image login-company-logo" src="{{ url_for('static', filename='images/escon-revised-transparent.png') }}" alt="Escon Elevators Pvt. Ltd. — Customized Elevating Solutions">
+                <img class="m2m-illustration" src="{{ url_for('static', filename='images/m2m-sim-industries.png') }}" alt="M2M SIM connections across vending, payment, transport, drones, ATMs, and industrial equipment">
                 <div class="welcome">
                     <h1>Elevating Management<br><span>Empowering Excellence</span></h1>
                     <p>A complete solution OF GSM Electronics,Electrical,GSM Master,Maintenance,Lost/Decommissioned — designed for modern elevator and escalator businesses.</p>
@@ -384,8 +569,7 @@
 
         <section class="login-card" aria-label="GSM application login">
             <div class="login-card-content">
-                <div class="brand-logo">ESCON</div>
-                <h2>GSM Application</h2>
+                <img class="company-image login-card-logo" src="{{ url_for('static', filename='images/escon-revised-white-text.png') }}" alt="Escon Elevators Pvt. Ltd. — Customized Elevating Solutions">
                 <div class="login-subtitle">User Login</div>
                 <form action="/login" method="POST">
                     {% with messages = get_flashed_messages() %}
@@ -399,20 +583,20 @@
                     <label class="form-label" for="username">Username</label>
                     <div class="input-wrap">
                         <i class="fa-solid fa-user"></i>
-                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter Username" autocomplete="username" autofocus required>
+                        <input type="text" class="form-control" id="username" name="username" placeholder="Enter Username" autocomplete="username" required>
                     </div>
                     <label class="form-label" for="password">Password</label>
                     <div class="input-wrap">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" class="form-control password-input" id="password" name="password" placeholder="Enter Password" autocomplete="current-password" required>
-                        <i class="fa-solid fa-eye toggle-password" id="togglePassword" title="Show / Hide Password"></i>
+                        <button type="button" class="toggle-password" id="togglePassword" aria-label="Show password">Show</button>
                     </div>
                     <div class="login-options">
                         <label><input type="checkbox" name="remember"> Remember Me</label>
                         <a href="#">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn login-btn">
-                        <i class="fa-solid fa-right-to-bracket me-1"></i> Login
+                        <i class="fa-solid fa-arrow-right me-2"></i> Login
                     </button>
                 </form>
                 <div class="secure-note">
@@ -435,8 +619,8 @@
         togglePassword.addEventListener("click", function () {
             const type = password.getAttribute("type") === "password" ? "text" : "password";
             password.setAttribute("type", type);
-            this.classList.toggle("fa-eye");
-            this.classList.toggle("fa-eye-slash");
+            this.textContent = type === "password" ? "Show" : "Hide";
+            this.setAttribute("aria-label", type === "password" ? "Show password" : "Hide password");
         });
     }
 </script>
